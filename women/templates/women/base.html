@@ -1,4 +1,8 @@
+<!--подключаем статические файлы - картинки, стили-->
 {% load static %}
+<!--подключаем теги из папки women/templatetags-->
+{% load women_tags %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,6 +36,12 @@
 <tr>
 <!-- Sidebar слева -->
 	<td valign="top" class="left-chapters">
+
+<!-- далее подгружаем функцию-тег из women/templatetags/women_tags.py и используем в качестве пременной categories -->
+<!-- это позволяет нам не дублировать код в функциях views.py, когда мы хотим получить все записи из БД (как пример) -->
+<!-- про функционал пользовательских тегов шаблонов см.курс selfedu по джанго (урок 11)	или кури документацию -->
+		{% get_categories as categories %}
+
 	<ul id="leftchapters">
 
 		{% if cat_selected == 0 %}
@@ -39,9 +49,9 @@
 		{% else %}
 		<li><a href="{% url 'home' %}">Все категории</a></li>
 		{% endif %}
-
-		{% for c in cats %}
-		{% if c.pk == cat_selected %}
+		<!-- перебираем циклом categories и выводим имя категории или ссылку на нее -->
+		{% for c in categories %}
+		{% if c.slug == cat_selected %}
 		<li class="selected">{{c.name}}</li>
 		{% else %}
 		<li><a href="{{ c.get_absolute_url }}">{{c.name}}</a></li>
