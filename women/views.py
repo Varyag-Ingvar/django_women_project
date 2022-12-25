@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseNotFound
+
+from .forms import AddPostForm
 from .models import Women, Category
 
 # меню на страницах сайта
@@ -36,7 +38,16 @@ def about(request):
 
 
 def addpage(request):
-    return HttpResponse('Add topic')
+    """функция представления addpage отвечает за отображение шаблона addpage.html по маршруту с именем addpage"""
+    if request.method == 'POST':  # если пользователь ввел в форму данные и нажал кнопку "добавить"
+        form = AddPostForm(request.POST)  # добавляем форму, с заполненными пользователем данными.
+        if form.is_valid():   # если данные введенные пользователем валидны
+            print(form.cleaned_data)   # выводим в консоль "очищенные данные"
+    else:
+        form = AddPostForm()  # выводим пустую форму (настройки формы лежат в women/forms.py)
+
+    context = {'form': form, 'menu': menu, 'title': 'Добавление статьи'}  # передаем форму в шаблон ('form': form)
+    return render(request, 'women/addpage.html', context=context)
 
 
 def contact(request):
