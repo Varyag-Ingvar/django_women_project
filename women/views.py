@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 
 from .forms import AddPostForm
@@ -41,8 +41,12 @@ def addpage(request):
     """функция представления addpage отвечает за отображение шаблона addpage.html по маршруту с именем addpage"""
     if request.method == 'POST':  # если пользователь ввел в форму данные и нажал кнопку "добавить"
         form = AddPostForm(request.POST)  # добавляем форму, с заполненными пользователем данными.
-        if form.is_valid():   # если данные введенные пользователем валидны
-            print(form.cleaned_data)   # выводим в консоль "очищенные данные"
+        if form.is_valid():   # если данные введенные пользователем валидны, они идут в form.cleaned_data
+            try:
+                Women.objects.create(**form.cleaned_data)  # добавляем данные формы в БД
+                return redirect('home')     # и если добавление в БД успешно, то редирект на домашнюю страницу
+            except:
+                form.add_error(None, 'Ошибка добавления статьи')  # если добавление в БД не прошло, выкинем исключение
     else:
         form = AddPostForm()  # выводим пустую форму (настройки формы лежат в women/forms.py)
 
