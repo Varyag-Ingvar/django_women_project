@@ -3,7 +3,8 @@
 {% block content %}
     <h1>{{ title }}</h1>
     <!-- пропишем форму -->
-    <form action="{% url 'add_page' %}" method="post">
+                            <!-- !!! обязательно указываем enctype="multipart/form-data если отправляем файлы !!! -->
+    <form action="{% url 'add_page' %}" method="post" enctype="multipart/form-data">
         <!--  {% csrf_token %}  это защита формы от csrf-атак, джанго обрабатывает только формы с этим токеном  -->
         {% csrf_token %}
         <!--  form.as_p позволяет отобразить все поля формы через тег абзаца p (as_p); as_p - это метод класса Form  -->
