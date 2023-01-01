@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
+from django.views.generic import ListView
 
 from .forms import AddPostForm
 from .models import Women, Category
@@ -11,24 +12,48 @@ menu = [{'title': 'О сайте', 'url_name': 'about'},
         {'title': 'Войти', 'url_name': 'login'}]
 
 
-def index(request):
-    """функция представления index отвечает за отображение шаблона index.html по маршруту с именем home"""
-    posts = Women.objects.all()   # выбираем из таблицы Women в БД все записи и сохраняем в переменную posts
+class WomenHome(ListView):
+    """вместо функции index сделаем класс WomenHome для отображения домашней страницы
+    на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)"""
+    model = Women  # используемая модель
+    template_name = 'women/index.html'  # указываем какой шаблон использовать
+    context_object_name = 'posts'  # имя объекта который передается в шаблон index.html в виде {% for post in posts %}
 
-    """можем убрать переменную cats и исключить ее из коллекции context, т.к. мы заменили этот функционал
-    с помощью создания тегов для шаблонов в women/templatetags/women_tags.py с целью исключения дублирования кода
-    в функциях-представлениях, дабы не нарушать принцип DRY (переменная оставлена тут для наглядности)"""
-    cats = Category.objects.all()  # выбираем из таблицы Category в БД все записи и сохраняем в переменную cats
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """формирует и статический и динамический контекст, который передается в шаблон.
+         Сначала берем из базового класса ListView уже сформированный контекст,
+         с помощью super().get_context_data(**kwargs)
+        чтобы не переопределить уже существующие переменные выше - template_name, context_object_name и т.д. и т.п."""
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
+        context['title'] = 'Главная страница'  # и заголовок страницы в браузере (имя вкладки)
+        context['cat_selected'] = 0   # делаем чтобы категории отобр.другим цветом на странице при их выборе
+        return context
 
-    context = {
-        'posts': posts,
-        'cats': cats,
-        'menu': menu,
-        'title': 'Main page',
-        'cat_selected': 0,
-    }
+    def get_queryset(self):
+        """позволяет выбирать из таблицы Women нужные данныею.
+        В данном случае возьмем записи, у которых параметр is_published=True"""
+        return Women.objects.filter(is_published=True)
 
-    return render(request, 'women/index.html', context=context)
+
+# def index(request):
+#     """функция представления index отвечает за отображение шаблона index.html по маршруту с именем home"""
+#     posts = Women.objects.all()   # выбираем из таблицы Women в БД все записи и сохраняем в переменную posts
+#
+#     """можем убрать переменную cats и исключить ее из коллекции context, т.к. мы заменили этот функционал
+#     с помощью создания тегов для шаблонов в women/templatetags/women_tags.py с целью исключения дублирования кода
+#     в функциях-представлениях, дабы не нарушать принцип DRY (переменная оставлена тут для наглядности)"""
+#     cats = Category.objects.all()  # выбираем из таблицы Category в БД все записи и сохраняем в переменную cats
+#
+#     context = {
+#         'posts': posts,
+#         'cats': cats,
+#         'menu': menu,
+#         'title': 'Main page',
+#         'cat_selected': 0,
+#     }
+#
+#     return render(request, 'women/index.html', context=context)
 
 
 def about(request):
