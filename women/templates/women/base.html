@@ -52,7 +52,7 @@
 		{% endif %}
 		<!-- перебираем циклом categories и выводим имя категории или ссылку на нее -->
 		{% for c in categories %}
-		{% if c.slug == cat_selected %}
+		{% if c.id == cat_selected %}
 		<li class="selected">{{c.name}}</li>
 		{% else %}
 		<li><a href="{{ c.get_absolute_url }}">{{c.name}}</a></li>
