@@ -2,20 +2,25 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .forms import AddPostForm
 from .models import Women, Category
+from .utils import DataMixin, menu
 
 # меню на страницах сайта
-menu = [{'title': 'О сайте', 'url_name': 'about'},
-        {'title': 'Добавить статью', 'url_name': 'add_page'},
-        {'title': 'Обратная связь', 'url_name': 'contact'},
-        {'title': 'Войти', 'url_name': 'login'}]
+"""в целях оптимизации(убираем дублирование кода) перенесено в women/utils.py - тут оставлено для примера, как было"""
+# menu = [{'title': 'О сайте', 'url_name': 'about'},
+#         {'title': 'Добавить статью', 'url_name': 'add_page'},
+#         {'title': 'Обратная связь', 'url_name': 'contact'},
+#         {'title': 'Войти', 'url_name': 'login'}]
 
 
-class WomenHome(ListView):
+class WomenHome(DataMixin, ListView):
     """вместо функции index сделаем класс WomenHome для отображения домашней страницы
-    на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)"""
+    на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)
+    Добавили наследование от DataMixin из women/utils.py для того чтобы убарть дублирование кода
+    Убираемый код задокументирован в качестве примера, что было убрано"""
     model = Women  # используемая модель
     template_name = 'women/index.html'  # указываем какой шаблон использовать
     context_object_name = 'posts'  # имя объекта который передается в шаблон index.html - {% for post in posts %}
@@ -26,10 +31,12 @@ class WomenHome(ListView):
          с помощью super().get_context_data(**kwargs)
         чтобы не переопределить уже существующие переменные выше - template_name, context_object_name и т.д. и т.п."""
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
-        context['title'] = 'Главная страница'  # и заголовок страницы в браузере (имя вкладки)
-        context['cat_selected'] = 0   # делаем чтобы категории отобр.другим цветом на странице при их выборе
-        return context
+        # context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
+        # context['title'] = 'Главная страница'  # и заголовок страницы в браузере (имя вкладки)
+        # context['cat_selected'] = 0   # делаем чтобы категории отобр.другим цветом на странице при их выборе
+        mixin_context = self.get_user_context(title='Главная страница')  # дополняем контекст из род.класса DataMixin
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
 
     def get_queryset(self):
         """позволяет выбирать из таблицы Women нужные данные.
@@ -84,9 +91,11 @@ def about(request):
 #     context = {'form': form, 'menu': menu, 'title': 'Добавление статьи'}  # передаем форму в шаблон ('form': form)
 #     return render(request, 'women/addpage.html', context=context)
 
-class AddPage(CreateView):
+
+class AddPage(LoginRequiredMixin, DataMixin, CreateView):
     """вместо функции addpage сделаем класс AddPage для отображения в шаблоне addpage.html
-    на базе класса CreateView (др.классы представлений см.документацию)"""
+    на базе класса CreateView (др.классы представлений см.документацию)
+    Добавлено наследование от LoginRequiredMixin - это позволит добавлять записи только авторизованным пользователям"""
     form_class = AddPostForm  # используемая форма из women/forms.py
     template_name = 'women/addpage.html'  # указываем какой шаблон использовать
     success_url = reverse_lazy('home')  # в случае успешного добавления статьи пренаправить на homepage
@@ -97,9 +106,11 @@ class AddPage(CreateView):
          с помощью super().get_context_data(**kwargs)
         чтобы не переопределить уже существующие переменные выше - template_name и т.д. и т.п."""
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
-        context['title'] = 'Добавление статьи'  # и заголовок страницы в браузере (имя вкладки)
-        return context
+        # context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
+        # context['title'] = 'Добавление статьи'  # и заголовок страницы в браузере (имя вкладки)
+        mixin_context = self.get_user_context(title='Добавление статьи')  # дополняем контекст из род.класса DataMixin
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
 
 
 def contact(request):
@@ -123,7 +134,7 @@ def login(request):
 #
 #     return render(request, 'women/post.html', context=context)
 
-class ShowPost(DetailView):
+class ShowPost(DataMixin, DetailView):
     """вместо функции show_post сделаем класс ShowPost для отображения страницы отдельного поста (конкретная актриса
     или певица)
         на базе класса DetailView (др.классы представлений см.документацию)"""
@@ -138,9 +149,11 @@ class ShowPost(DetailView):
          с помощью super().get_context_data(**kwargs)
         чтобы не переопределить уже существующие переменные выше - template_name, context_object_name и т.д. и т.п."""
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
-        context['title'] = context['post']
-        return context
+        # context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
+        # context['title'] = context['post']
+        mixin_context = self.get_user_context(title=context['post'])  # дополняем контекст из род.класса DataMixin
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
 
 
 
@@ -162,7 +175,7 @@ class ShowPost(DetailView):
 #
 #     return render(request, 'women/index.html', context=context)
 
-class WomenCategory(ListView):
+class WomenCategory(DataMixin, ListView):
     """вместо функции show_category сделаем класс WomenCategory для отображения страниц категорий (актрисы, певицы)
         на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)"""
     model = Women
@@ -179,14 +192,17 @@ class WomenCategory(ListView):
          с помощью super().get_context_data(**kwargs)
         чтобы не переопределить уже существующие переменные выше - template_name, context_object_name и т.д. и т.п."""
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
-        context['title'] = 'Категория - ' + str(context['posts'][0].cat)
+        # context['menu'] = menu  # добавляем к сформированному контексту еще данные, в данном случае передаем наше menu
+        # context['title'] = 'Категория - ' + str(context['posts'][0].cat)
         # делаем чтобы категории отобр.другим цветом на странице при их выборе
         #       в base.html
         #       {% for c in categories %}
         # 		{% if c.id == cat_selected %}
-        context['cat_selected'] = context['posts'][0].cat_id
-        return context
+        mixin_context = self.get_user_context(title='Категория - ' + str(context['posts'][0].cat),
+                                              cat_selected = context['posts'][0].cat_id)  # дополняем контекст из род.класса DataMixin
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        # context['cat_selected'] = context['posts'][0].cat_id
+        return total_context
 
 
 def page_not_found(request, exception):
