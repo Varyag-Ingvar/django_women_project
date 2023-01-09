@@ -21,6 +21,7 @@ class WomenHome(DataMixin, ListView):
     на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)
     Добавили наследование от DataMixin из women/utils.py для того чтобы убарть дублирование кода
     Убираемый код задокументирован в качестве примера, что было убрано"""
+    # paginate_by = 3  # количество постов отображаемых на странице (вынесено в DataMixin)
     model = Women  # используемая модель
     template_name = 'women/index.html'  # указываем какой шаблон использовать
     context_object_name = 'posts'  # имя объекта который передается в шаблон index.html - {% for post in posts %}
@@ -178,6 +179,7 @@ class ShowPost(DataMixin, DetailView):
 class WomenCategory(DataMixin, ListView):
     """вместо функции show_category сделаем класс WomenCategory для отображения страниц категорий (актрисы, певицы)
         на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)"""
+    # paginate_by = 3
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'

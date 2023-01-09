@@ -40,7 +40,7 @@
 
 <!-- далее подгружаем функцию-тег из women/templatetags/women_tags.py и используем в качестве пременной categories -->
 <!-- это позволяет нам не дублировать код в функциях views.py, когда мы хотим получить все записи из БД (как пример) -->
-<!-- про функционал пользовательских тегов шаблонов см.курс selfedu по джанго (урок 11)	или кури документацию -->
+<!-- про функционал пользовательских тегов шаблонов - кури документацию -->
 		{% get_categories as categories %}
 
 	<ul id="leftchapters">
@@ -72,6 +72,40 @@
 	<div class="content-text">
 {% block content %}
 {% endblock %}
+
+<!-- убираем отображение номеров пагинации, если контент помещается на одной странице -->
+{% if page_obj.has_other_pages %}
+<!-- отобразим пагинацию внизу страницы -->
+	<nav class="list-pages">
+		<ul>
+			<!-- добавим стрелку-ссылку на предыдущую страницу в пагинации -->
+			{% if page_obj.has_previous %}
+			<li class="page-num">
+				<a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+			</li>
+			{% endif %}
+
+			{% for p in paginator.page_range %}
+			{% if page_obj.number == p %}
+			<li class="page-num page-num-selected">{{ p }}</li>
+			<!-- оставим по две ссылки(номера страниц) справа и слева относительно номера выбранной страницы -->
+			{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+			<li class="page-num">
+				<a href="?page={{ p }}">{{ p }}</a>
+			</li>
+			{% endif %}
+			{% endfor %}
+
+			<!-- добавим стрелку-ссылку на следующую страницу в пагинации -->
+			{% if page_obj.has_next %}
+			<li class="page-num">
+				<a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+			</li>
+			{% endif %}
+
+		</ul>
+	</nav>
+		{% endif %}
 	</div>
 <!-- Конец блока контента -->
 
@@ -80,7 +114,7 @@
 <!-- Footer -->
 <tr><td valign=top>
 	<div id="footer">
-		<p>&copy; 2022 С вас лайк и подписка, дон.</p>
+		<p>&copy; 2022-2023 С вас лайк и подписка, дон.</p>
 	</div>
 </td></tr></table>
 <!-- Конец footer'а и страницы -->
