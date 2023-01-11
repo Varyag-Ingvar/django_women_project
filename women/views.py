@@ -1,3 +1,4 @@
+from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.urls import reverse_lazy
@@ -210,4 +211,18 @@ class WomenCategory(DataMixin, ListView):
 def page_not_found(request, exception):
     """Переопределяем поведение 404 ошибки, работает когда в settings проекта параметр DEBUG = False"""
     return HttpResponseNotFound('Страница не найдена')
+
+
+class RegisterUser(DataMixin, CreateView):
+    """класс регистрации пользователя по маршруту register"""
+    form_class = UserCreationForm   # стандартный класс джанго, импортируем его выше
+    template_name = 'women/register.html'
+    success_url = reverse_lazy('login')   # при успешной регистрации редирект на страницу входа
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mixin_context = self.get_user_context(title='Регистрация')
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
+
 
