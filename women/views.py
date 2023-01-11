@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .forms import AddPostForm
+from .forms import AddPostForm, RegisterUserForm
 from .models import Women, Category
 from .utils import DataMixin, menu
 
@@ -215,7 +215,8 @@ def page_not_found(request, exception):
 
 class RegisterUser(DataMixin, CreateView):
     """класс регистрации пользователя по маршруту register"""
-    form_class = UserCreationForm   # стандартный класс джанго, импортируем его выше
+    # form_class = UserCreationForm   # стандартный класс джанго, импортируем его выше
+    form_class = RegisterUserForm  # импортируем созданную нами форму из forms.py
     template_name = 'women/register.html'
     success_url = reverse_lazy('login')   # при успешной регистрации редирект на страницу входа
 
