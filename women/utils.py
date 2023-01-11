@@ -8,7 +8,7 @@ menu = [{'title': 'О сайте', 'url_name': 'about'},
 class DataMixin:
     """Создается для того чтобы убрать дублирование кода из классов представлений в women/views.py"""
 
-    paginate_by = 1  # количество постов отображаемых на странице (вынесено в DataMixin)
+    paginate_by = 3  # количество постов отображаемых на странице (вынесено в DataMixin)
 
     def get_user_context(self, **kwargs):
         context = kwargs
