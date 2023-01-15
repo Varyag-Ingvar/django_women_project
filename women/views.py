@@ -1,11 +1,13 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import logout, login
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.views import LoginView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .forms import AddPostForm, RegisterUserForm
+from .forms import AddPostForm, RegisterUserForm, LoginUserForm
 from .models import Women, Category
 from .utils import DataMixin, menu
 
@@ -119,8 +121,8 @@ def contact(request):
     return HttpResponse('Feedback')
 
 
-def login(request):
-    return HttpResponse('Authorization')
+# def login(request):
+#     return HttpResponse('Authorization')
 
 
 # def show_post(request, post_slug):
@@ -218,12 +220,50 @@ class RegisterUser(DataMixin, CreateView):
     # form_class = UserCreationForm   # стандартный класс джанго, импортируем его выше
     form_class = RegisterUserForm  # импортируем созданную нами форму из forms.py
     template_name = 'women/register.html'
-    success_url = reverse_lazy('login')   # при успешной регистрации редирект на страницу входа
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         mixin_context = self.get_user_context(title='Регистрация')
         total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
         return total_context
+
+    def get_success_url(self):
+        """куда перенаправить в случае успешной регистрации юзера"""
+        return reverse_lazy('login')
+
+    def form_valid(self, form):
+        """метод вызывается при успешной регистрации и юзер сразу логинится, далее редирект на главную страницу"""
+        user = form.save()  # добавляем юзера в БД
+        login(self.request, user)  # стандартная функция входа из джанго, импортируем
+        return redirect('home')
+
+
+
+class LoginUser(DataMixin, LoginView):
+    """Авторизация пользователей по маршруту login"""
+    # form_class = AuthenticationForm  # импортируем стандартную форму
+    form_class = LoginUserForm    # импортируем свою форму из forms.py
+    template_name = 'women/login.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mixin_context = self.get_user_context(title='Авторизация')
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
+
+    def get_success_url(self):
+        """куда перенаправить в случае успешной авторизации юзера.
+        Вместо этой функции можно прописать в настройках LOGIN_REDIRECT_URL = '/' """
+        return reverse_lazy('home')
+
+
+
+def logout_user(request):
+    """логаут юзера по маршруту logout"""
+    logout(request)  # импортируем стандартную функцию логаута джанго
+    return redirect('home')  # после выхода редирект на главную страницу
+
+
+
 
 

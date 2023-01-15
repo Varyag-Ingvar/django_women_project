@@ -3,19 +3,21 @@
 {% block content %}
     <h1>{{ title }}</h1>
 
-    <!-- пропишем форму регистрации-->
+    <!-- пропишем форму длят авторизации-->
     <form method="post">
         <!--  {% csrf_token %}  это защита формы от csrf-атак, джанго обрабатывает только формы с этим токеном  -->
         {% csrf_token %}
         <!--  form.as_p позволяет отобразить все поля формы через тег абзаца p (as_p); as_p - это метод класса Form  -->
-        <!--  {{ form.as_p }}-->
+<!--        {{ form.as_p }}-->
+
+        <div class="form-error">{{ form.non_field_errors }}</div>
+
         <!-- пропишем отобр.формы через цикл, вместо стандартного отображения формы через {{ form.as_p }}  -->
         {% for f in form %}
         <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
         <div class="form-error">{{ f.errors }}</div>
         {% endfor %}
-        <button type="submit">Регистрация</button>
+
+        <button type="submit">Войти</button>
     </form>
 {% endblock %}
-
-

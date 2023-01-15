@@ -1,7 +1,7 @@
 """файл для создания форм на сайте"""
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
 from .models import *
@@ -53,3 +53,9 @@ class RegisterUserForm(UserCreationForm):
         # }
 
 
+
+class LoginUserForm(AuthenticationForm):
+    """класс формы авторизации пользователей, наследуемся от встроенного в джанго класса AuthenticationForm
+    Переопределим аттрибуты и зададим стили"""
+    username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-input'}))
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
