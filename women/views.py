@@ -4,10 +4,10 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404, HttpResponseNotFound
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .forms import AddPostForm, RegisterUserForm, LoginUserForm
+from .forms import AddPostForm, RegisterUserForm, LoginUserForm, ContactForm
 from .models import Women, Category
 from .utils import DataMixin, menu
 
@@ -121,8 +121,26 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
         return total_context
 
 
-def contact(request):
-    return HttpResponse('Feedback')
+class ContactFormView(DataMixin, FormView):
+    """Страница обратной связи по маршруту contact.html
+    Наследуемся от DataMixin и FormView - стандартный класс джанго для форм которые не обращаются к БД"""
+    form_class = ContactForm  # импортируем созданную нами форму из forms.py
+    template_name = 'women/contact.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mixin_context = self.get_user_context(title='Обратная связь')
+        total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
+        return total_context
+
+    def get_success_url(self):
+        """куда перенаправить при успешном заполнении формы обратной связи"""
+        return reverse_lazy('home')
+
+    def form_valid(self, form):
+        """метод вызывается при успешном заполнении полей формы"""
+        return redirect('home')
+
 
 
 # def login(request):

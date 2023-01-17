@@ -23,6 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('women.urls')),
+    path('captcha/', include('captcha.urls')),
 ]
 
 # в режиме отладки(DEBUG=True) добавляем доп.маршрут для статических файлов(картинок)(в настр.надо указать ) + debug_toolbar

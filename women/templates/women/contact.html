@@ -1,0 +1,18 @@
+{% extends 'women/base.html' %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <!-- пропишем форму -->
+    <form method="post" >
+        <!--  {% csrf_token %}  это защита формы от csrf-атак, джанго обрабатывает только формы с этим токеном  -->
+        {% csrf_token %}
+        <!--  form.as_p позволяет отобразить все поля формы через тег абзаца p (as_p); as_p - это метод класса Form  -->
+        <!--  {{ form.as_p }} -->
+        <!--  Но мы сделаем лучше, переберем циклом form и обернем его элементы тегами со стилями  -->
+        {% for f in form %}
+        <p><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}: </label>{{ f }}</p>
+        <div class="form-error">{{ f.errors }}</div>
+        {% endfor %}
+        <button type="submit">Отправить</button>
+    </form>
+{% endblock %}

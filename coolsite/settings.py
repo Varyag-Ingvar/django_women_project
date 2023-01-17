@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'women',  # наше приложение
     'debug_toolbar',  # django debug toolbar
+    'captcha',  # django simple captcha
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
