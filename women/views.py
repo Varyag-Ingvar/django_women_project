@@ -44,8 +44,12 @@ class WomenHome(DataMixin, ListView):
 
     def get_queryset(self):
         """позволяет выбирать из таблицы Women нужные данные.
-        В данном случае возьмем записи, у которых параметр is_published=True"""
-        return Women.objects.filter(is_published=True)
+        В данном случае возьмем записи, у которых параметр is_published=True
+        Используя django_debug_toolbar мы увидели, что для формирования дом.страницы к БД
+        идет слишком много дублирующих запросов. Решение - жадный запрос с помощью .select_related('cat')
+        возьмет все связанные данные из модели Category, таким образом при выводе категорий в шаблоне index.html -
+        {{post.cat}} к БД не будут выполняться дополнительные SQL-запросы"""
+        return Women.objects.filter(is_published=True).select_related('cat')
 
 # def index(request):
 #     """функция представления index отвечает за отображение шаблона index.html по маршруту с именем home"""
@@ -182,14 +186,14 @@ class ShowPost(DataMixin, DetailView):
 class WomenCategory(DataMixin, ListView):
     """вместо функции show_category сделаем класс WomenCategory для отображения страниц категорий (актрисы, певицы)
         на базе класса ListView используемый для отображения списков (др.классы представлений см.документацию)"""
-    # paginate_by = 3
+    # paginate_by = 3   # вынесен в DataMixin в utils.py
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
     allow_empty = False
 
     def get_queryset(self):
-        return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True)
+        return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True).select_related('cat')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         """формирует и статический и динамический контекст, который передается в шаблон.
@@ -203,8 +207,9 @@ class WomenCategory(DataMixin, ListView):
         #       в base.html
         #       {% for c in categories %}
         # 		{% if c.id == cat_selected %}
-        mixin_context = self.get_user_context(title='Категория - ' + str(context['posts'][0].cat),
-                                              cat_selected = context['posts'][0].cat_id)  # дополняем контекст из род.класса DataMixin
+        c = Category.objects.get(slug=self.kwargs['cat_slug'])  # по слагу возьмем категорию
+        mixin_context = self.get_user_context(title='Категория - ' + str(c.name),
+                                              cat_selected=c.pk)  # дополняем контекст из род.класса DataMixin
         total_context = dict(list(context.items()) + list(mixin_context.items()))  # суммируем контексты
         # context['cat_selected'] = context['posts'][0].cat_id
         return total_context
