@@ -58,7 +58,7 @@ ROOT_URLCONF = 'coolsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],   # пропишем путь для переопределения html-шаблонов админки
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
